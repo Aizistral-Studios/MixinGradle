@@ -36,6 +36,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -64,7 +66,9 @@ public class MixinEclipse {
             output = project.file('.factorypath')
         }
         project.tasks.eclipse.dependsOn(factories)
-        
+		
+		project.file('build/.apt_generated').mkdirs()
+		project.file('build/.apt_generated_test').mkdirs()
     }
     
     static class OrderedProperties extends Properties {
@@ -88,12 +92,12 @@ public class MixinEclipse {
     
     static class EclipseJdtAptTask extends DefaultTask {
         @InputFile File mappingsIn
-        @Input File refmapOut = project.file("build/${name}/mixins.refmap.json")
-        @Input File mappingsOut = project.file("build/${name}/mixins.mappings.tsrg")
-        @Input Map<String, String> processorOptions = new TreeMap<>()
+        @InputFile File refmapOut = project.file("build/${name}/mixins.refmap.json")
+        @InputFile File mappingsOut = project.file("build/${name}/mixins.mappings.tsrg")
+        @Internal Map<String, String> processorOptions = new TreeMap<>()
         
-        @Input File genTestDir = project.file('build/.apt_generated_test')
-        @Input File genDir = project.file('build/.apt_generated')
+        @InputDirectory File genTestDir = project.file('build/.apt_generated_test')
+        @InputDirectory File genDir = project.file('build/.apt_generated')
         
         @OutputFile File output
         
@@ -156,7 +160,8 @@ public class MixinEclipse {
     }
 
     static class EclipseFactoryPath extends DefaultTask {
-        @Input Configuration config
+		// No idea what gradle wants here lol
+        @Internal Configuration config
         @OutputFile File output
         
         @TaskAction
